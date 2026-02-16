@@ -1,6 +1,7 @@
 ﻿
 // See https://aka.ms/new-console-template for more information
 using System;
+using System.Linq;
 using Microsoft.EntityFrameworkCore;
 
 namespace CursoEFCore;
@@ -10,6 +11,16 @@ class Program
     static void Main(string[] args)
     {
         Console.WriteLine("App Starts!");
+
+        using var db = new Data.ApplicationContext();
+        
+        var pendingMigrations = db.Database.GetPendingMigrations().Any();
+
+        if (pendingMigrations)
+        {
+            // FOLLOW WITH BUSINESS RULE
+        }
+
     }
 
     // SET THE METHOD NAME AS MAIN2 FOR IT NOT TO BE CALLED AT APPLICATION START
