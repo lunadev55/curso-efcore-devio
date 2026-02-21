@@ -18,17 +18,44 @@ class Program
 
         using var db = new Data.ApplicationContext();
         
-        var pendingMigrations = db.Database.GetPendingMigrations().Any();
-
-        if (pendingMigrations)
-        {
-            // FOLLOW WITH BUSINESS RULE
-        }
+        // var pendingMigrations = db.Database.GetPendingMigrations().Any();
+        // if (pendingMigrations) { /* FOLLOW WITH BUSINESS RULE */ }
 
         // InserirDados();
         // InserirDadosEmMassa();
+        // InserirListaDeClientes();
 
-        InserirListaDeClientes();
+        ConsultarClientes();
+    }
+
+    private static void ConsultarClientes()
+    {
+        using var db = new Data.ApplicationContext();
+
+        // THE BELOW APPROACHES ALL WORK FOR RETRIEVING ENTITIES FROM THE DB
+
+        // var clientes = db.Clientes.Select(p => p).ToList();
+        // var clientes = db.Clientes.ToList();
+        // var clientes = (from c in db.Clientes select c).ToList();
+
+        // var clientesPorSintaxe = (from c in db.Clientes where c.Id > 0 select c).ToList();
+
+        // var clientesPorMetodo = db.Clientes.Where(c => c.Id > 0).ToList();
+
+        var clientesPorMetodoESemRastreamento = db.Clientes
+            .AsNoTracking() // DISABLES DEFAULT ENTITY TRACKING
+            .Where(c => c.Id > 0)
+            .OrderBy(c => c.Id)
+            .Take(10)
+            .ToList();
+
+        foreach (var cliente in clientesPorMetodoESemRastreamento)
+        {
+            Console.WriteLine($"Consultando Cliente: {cliente.Id}");
+            // db.Clientes.Find(cliente.Id);
+            
+            db.Clientes.FirstOrDefault(c => c.Id == cliente.Id);
+        }
     }
 
     // TODO - CREATE METHOD TO INSERT LIST OF 50 RANDOM CLIENTES IN THE DATABASE
