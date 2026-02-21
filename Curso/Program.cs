@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using CursoEFCore.Domain;
 using CursoEFCore.ValueObjects;
+using System.Collections.Generic;
 // using CursoEFCore.Data;
 
 namespace CursoEFCore;
@@ -24,7 +25,67 @@ class Program
             // FOLLOW WITH BUSINESS RULE
         }
 
-        InserirDados();
+        // InserirDados();
+        // InserirDadosEmMassa();
+
+        InserirListaDeClientes();
+    }
+
+    // TODO - CREATE METHOD TO INSERT LIST OF 50 RANDOM CLIENTES IN THE DATABASE
+    private static void InserirListaDeClientes()
+    {
+        var clientes = new List<Cliente>();
+
+        for (int indice = 10; indice <= 60; indice++)
+        {
+            var cliente = new Cliente
+            {
+                Nome = "Cliente " + indice,
+                Telefone = "819998877" + indice,
+                CEP = "509203" + indice,
+                Estado = "PE",
+                Cidade = "Recife " + indice
+            };
+
+            clientes.Add(cliente);
+        }
+
+        using var db = new Data.ApplicationContext();
+
+        db.Clientes.AddRange(clientes);
+        var result = db.SaveChanges();
+
+        Console.WriteLine($"{result} entities inserted in the database!");
+    }
+
+    // METHOD TO INSERT MULTIPLE DATA AT ONCE
+    // THIS EXAMPLE INSERTS 2 ENTITIES (PRODUTO AND PEDIDO) IN THE SAME OPERATIONS - db.AddRange();
+    private static void InserirDadosEmMassa()
+    {
+        var produto = new Produto
+        {
+            CodigoBarras = "11111111111111",
+            Descricao = "Descricao de produto pra teste de insercao em massa",
+            Valor = 123.56M,
+            TipoProduto = TipoProduto.Embalagem,
+            Ativo = true
+        };
+
+        var cliente = new Cliente
+        {
+            Nome = "Andre Luna Marinho",
+            Telefone = "81991581301",
+            CEP = "50920331",
+            Estado = "PE",
+            Cidade = "Recife"
+        };
+
+        using var db = new Data.ApplicationContext(); 
+        db.AddRange(produto, cliente);
+        var registros = db.SaveChanges();
+
+        if (registros > 0)
+            Console.WriteLine($"{registros} rows inserted in the database!");
     }
 
     private static void InserirDados()
