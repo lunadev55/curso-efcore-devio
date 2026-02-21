@@ -24,8 +24,80 @@ class Program
         // InserirDados();
         // InserirDadosEmMassa();
         // InserirListaDeClientes();
+        // ConsultarClientes();
+        // CadastrarPedido();
+        // ConsultarPedido();
 
-        ConsultarClientes();
+        ConsultarPedidoCarregamentoAdiantado();
+    }
+
+    private static void ConsultarPedidoCarregamentoAdiantado()
+    {
+        using var db = new Data.ApplicationContext();
+        var pedidos = db.Pedidos
+            .Include(p => p.Itens)
+            .ThenInclude(p => p.Produto)
+            .ToList();
+
+        Console.WriteLine(pedidos.Count);
+    }
+
+    private static void ConsultarPedido()
+    {
+        using var db = new Data.ApplicationContext();
+
+        var pedido = db.Pedidos
+            .Include(p => p.Itens)
+            .Where(p => p.Id > 0)
+            .FirstOrDefault();
+
+        if (pedido.Itens is null)
+            throw new NullReferenceException("Pedido.Itens was not loaded.");
+      
+        Console.WriteLine(string.Join(" | ",
+            $"Id: {pedido.Id}",
+            $"Cliente: {pedido.ClienteId}",
+            $"Iniciado em: {pedido.IniciadoEm:dd/MM/yyyy HH:mm}",
+            $"Status: {pedido.Status}",
+            $"Tipo Frete: {pedido.TipoFrete}",
+            $"Observação: {pedido.Observacao}",
+            $"Itens: [{string.Join(", ", pedido.Itens.Select(i =>
+                $"ProdutoId: {i.ProdutoId} Qtd: {i.Quantidade} Valor: {i.Valor}"
+            ))}]"
+        ));
+    }
+
+    private static void CadastrarPedido()
+    { 
+        using var db = new Data.ApplicationContext();
+
+        var cliente = db.Clientes.FirstOrDefault();
+        var produto = db.Produtos.FirstOrDefault();
+
+        var pedido = new Pedido
+        {
+            // ClienteId = cliente.Id, -- SETTING LIKE THIS ALSO WORKS
+            Cliente = cliente,
+            IniciadoEm = DateTime.Now,
+            TipoFrete = TipoFrete.FOB,
+            Status = StatusPedido.Analise,
+            Observacao = "observacao teste pedido utilizando .Include()",
+            Itens = new List<PedidoItem>()
+            {
+                new PedidoItem
+                {
+                    Produto = produto,
+                    Quantidade = 1,
+                    Valor = 12.12M,
+                    Desconto = 0M
+                }
+            }
+        };
+
+        db.Pedidos.Add(pedido);
+        var result = db.SaveChanges();
+
+        Console.WriteLine($"{result} pedidos inserted in the database!");
     }
 
     private static void ConsultarClientes()
@@ -52,7 +124,7 @@ class Program
         foreach (var cliente in clientesPorMetodoESemRastreamento)
         {
             Console.WriteLine($"Consultando Cliente: {cliente.Id}");
-            // db.Clientes.Find(cliente.Id);
+            // db.Clientes.Find(cliente.Id);`
             
             db.Clientes.FirstOrDefault(c => c.Id == cliente.Id);
         }
