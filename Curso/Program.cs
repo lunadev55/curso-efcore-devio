@@ -27,8 +27,57 @@ class Program
         // ConsultarClientes();
         // CadastrarPedido();
         // ConsultarPedido();
+        // ConsultarPedidoCarregamentoAdiantado();
 
-        ConsultarPedidoCarregamentoAdiantado();
+        // AtualizarDados();
+        AtualizarDados2();
+    }
+
+    private static void AtualizarDados2()
+    {
+        using var db = new Data.ApplicationContext();
+        var cliente = db.Clientes.Find(1);
+        cliente.Nome = "Testando Update do Nome 2";
+        
+        // NO NEED FOR IT - JUST SHOWS HOW TO SET THE STATE OF AN ENTITY
+        // db.Entry(cliente).State = EntityState.Modified;
+
+        // OTHER WAYS TO UPDATE PROPS - HERE AN ANONYMOUS OBJECT WAS CREATED
+        var clienteDesconectado = new
+        {
+            Nome = "Cliente Desconectado",
+            Telefone = "7966669999"
+        };
+        db.Entry(cliente).CurrentValues.SetValues(clienteDesconectado);
+
+        // IF WE CALL THE UPDATE METHOD - EF CORE THINKS THAT EVERY COLUMN WAS ALTERED AND IT DOES A FULL UPDATE
+        // db.Clientes.Update(cliente);
+
+        int result = db.SaveChanges();
+
+        Console.WriteLine($"{result} entitie(s) updated in the database!");
+    }
+
+    // METHOD TO DO A SIMPLE UPDATE IN THE DATABASE
+    // FETCH A CLIENTE FROM DB, CHANGES estado AND cidade PROPS AND CALLS SaveChanges()
+    private static void AtualizarDados()
+    {
+        using var db = new Data.ApplicationContext();
+
+        var cliente = db.Clientes
+            .Where(c => c.Id == 1)
+            .FirstOrDefault();
+        
+        // THIS WAY WITHOUT THE WHERE CLAUSE WORKS AS WELL
+        var cliente2 = db.Clientes
+            .FirstOrDefault(c => c.Id == 1);
+
+        cliente.Estado = "AL";
+        cliente.Cidade = "Maceio";
+
+        int result = db.SaveChanges();
+
+        Console.WriteLine($"{result} entities updated in the database!");
     }
 
     private static void ConsultarPedidoCarregamentoAdiantado()
@@ -36,7 +85,7 @@ class Program
         using var db = new Data.ApplicationContext();
         var pedidos = db.Pedidos
             .Include(p => p.Itens)
-            .ThenInclude(p => p.Produto)
+                .ThenInclude(p => p.Produto)
             .ToList();
 
         Console.WriteLine(pedidos.Count);
