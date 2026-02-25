@@ -24,13 +24,41 @@ class Program
         // InserirDados();
         // InserirDadosEmMassa();
         // InserirListaDeClientes();
+
         // ConsultarClientes();
         // CadastrarPedido();
         // ConsultarPedido();
         // ConsultarPedidoCarregamentoAdiantado();
 
         // AtualizarDados();
-        AtualizarDados2();
+        // AtualizarDados2();
+
+        RemoverRegistro();
+    }
+
+    private static void RemoverRegistro()
+    {
+        using var db = new Data.ApplicationContext();
+
+        // THE FIND METHOD FIRST SEARCH IN-MEMORY, IF IT DDES NOT FIND THE ENTITY, SEARCHES THE DATABASE
+        var cliente = db.Clientes
+            .Find(51); 
+
+        // REMOVES BY SETTING THE EF CORE ENTITY STATE TO DELETED
+        db.Entry(cliente).State = EntityState.Deleted;        
+
+        // REMOVES BY CALLING THE REMOVE METHOD 
+        // db.Clientes.Remove(cliente);
+        // db.Remove(cliente);
+
+        // REMOVES IN AN DETACHED APPROACH
+        // DOT NOT SEARCHES THE DB FOR THE ENTITY - APPLIES THE DELETE DIRECTLY        
+        var clienteDesconectado = new Cliente { Id = 50 };
+        db.Entry(clienteDesconectado).State = EntityState.Deleted;
+
+        int result = db.SaveChanges();
+
+        Console.WriteLine($"{result} entities removed from database!");
     }
 
     private static void AtualizarDados2()
